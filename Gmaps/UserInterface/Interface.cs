@@ -19,10 +19,15 @@ namespace Gmaps
     {
 
         private DataManager dm;
+        GMapOverlay markers = new GMapOverlay("markers");
+        GMapOverlay polygons = new GMapOverlay("polygons");
+        GMapOverlay routes = new GMapOverlay("routes");
+
         public Interface()
         {
             InitializeComponent();
             dm = new DataManager();
+
         }
 
         private void gMap_Load(object sender, EventArgs e)
@@ -32,17 +37,10 @@ namespace Gmaps
 
             gmap.Position = new PointLatLng(3.42158, -76.5205);
 
-
-            GMapOverlay markers = new GMapOverlay("markers");
-            
         }
         
         private void setMarkers()
         {
-
-            GMapOverlay markers = new GMapOverlay("markers");
-
-       
             GMapMarker marker = new GMarkerGoogle(
             new PointLatLng(48.8617774, 2.349272),
             GMarkerGoogleType.red_dot);
@@ -57,8 +55,6 @@ namespace Gmaps
 
         private void setPolygons()
         {
-
-            GMapOverlay polygons = new GMapOverlay("polygons");
             List<PointLatLng> points = new List<PointLatLng>();
             points.Add(new PointLatLng(48.866383, 2.323575));
             points.Add(new PointLatLng(48.863868, 2.321554));
@@ -77,8 +73,6 @@ namespace Gmaps
 
         private void setRoutes()
         {
-
-            GMapOverlay routes = new GMapOverlay("routes");
             List<PointLatLng> points = new List<PointLatLng>();
             points.Add(new PointLatLng(48.866383, 2.323575));
             points.Add(new PointLatLng(48.863868, 2.321554));
@@ -106,6 +100,7 @@ namespace Gmaps
             setMarkers();
             setPolygons();
             setRoutes();
+
         }
 
         private void randomPoint()
@@ -113,8 +108,6 @@ namespace Gmaps
 
             double lat = RandomPos.rLatitude();
             double lon = RandomPos.rLongitude();
-
-            GMapOverlay markers = new GMapOverlay("markers");
 
             GMapMarker marker = new GMarkerGoogle(
             new PointLatLng(lat, lon),
@@ -129,13 +122,12 @@ namespace Gmaps
         private void random_Click(object sender, EventArgs e)
         {
             randomPoint();
+
         }
 
         private void municipios_Click(object sender, EventArgs e)
         {
             List<string> lista = dm.getLista();
-
-            GMapOverlay markers = new GMapOverlay("markers");
 
             foreach (string f in lista)
             {
@@ -154,6 +146,8 @@ namespace Gmaps
 
             gmap.Overlays.Add(markers);
 
+
         }
+
     }
 }
