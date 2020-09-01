@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using GMap.NET;
 using GMap.NET.WindowsForms;
@@ -19,6 +14,10 @@ namespace Gmaps
     {
 
         private DataManager dm;
+        private List<PointLatLng> puntos;
+        private List<PointLatLng> poligonos;
+        private List<PointLatLng> rutas;
+
         GMapOverlay markers = new GMapOverlay("markers");
         GMapOverlay polygons = new GMapOverlay("polygons");
         GMapOverlay routes = new GMapOverlay("routes");
@@ -27,7 +26,10 @@ namespace Gmaps
         {
             InitializeComponent();
             dm = new DataManager();
-
+            
+            puntos = new List<PointLatLng>();
+            poligonos = new List<PointLatLng>();
+            rutas = new List<PointLatLng>();
         }
 
         private void gMap_Load(object sender, EventArgs e)
@@ -36,93 +38,39 @@ namespace Gmaps
             GMaps.Instance.Mode = AccessMode.ServerOnly;
 
             gmap.Position = new PointLatLng(3.42158, -76.5205);
+            
+            gmap.Overlays.Add(markers);
+            gmap.Overlays.Add(polygons);
+            gmap.Overlays.Add(routes);
 
         }
         
         private void setMarkers()
         {
-            GMapMarker marker = new GMarkerGoogle(
-            new PointLatLng(48.8617774, 2.349272),
-            GMarkerGoogleType.red_dot);
-            marker.ToolTipText = "hello\nout there";
-            marker.Tag = "Hey";
-            markers.Markers.Add(marker);
- 
-            gmap.Overlays.Add(markers);
-            
+            foreach(PointLatLng p in puntos)
+            {
+                GMapMarker marker = new GMarkerGoogle(p, GMarkerGoogleType.red_dot);
+                markers.Markers.Add(marker);
+            }
 
         }
 
         private void setPolygons()
         {
-            List<PointLatLng> points = new List<PointLatLng>();
-            points.Add(new PointLatLng(48.866383, 2.323575));
-            points.Add(new PointLatLng(48.863868, 2.321554));
-            points.Add(new PointLatLng(48.861017, 2.330030));
-            points.Add(new PointLatLng(48.863727, 2.331918));
-            GMapPolygon polygon = new GMapPolygon(points, "Jardin des Tuileries");
-            polygon.Tag = "Hi";
+            GMapPolygon polygon = new GMapPolygon(poligonos, "Polygon");
 
             polygon.Fill = new SolidBrush(Color.FromArgb(50, Color.Red));
             polygon.Stroke = new Pen(Color.Red, 1);
 
             polygons.Polygons.Add(polygon);
-            gmap.Overlays.Add(polygons);
-
         }
 
         private void setRoutes()
         {
-            List<PointLatLng> points = new List<PointLatLng>();
-            points.Add(new PointLatLng(48.866383, 2.323575));
-            points.Add(new PointLatLng(48.863868, 2.321554));
-            points.Add(new PointLatLng(48.861017, 2.330030));
-            GMapRoute route = new GMapRoute(points, "A walk in the park");
+            GMapRoute route = new GMapRoute(rutas, "Route");
             route.Stroke = new Pen(Color.Red, 3);
+            Console.WriteLine(route.Distance);
             routes.Routes.Add(route);
-            gmap.Overlays.Add(routes);
-
-        }
-
-        private void gmap_OnMarkerClick(GMapMarker item, MouseEventArgs e)
-        {
-            Console.WriteLine(String.Format("Marker {0} was clicked.", item.Tag));
-        }
-
-        private void gmap_OnPolygonClick(GMapPolygon item, MouseEventArgs e)
-        {
-            Console.WriteLine(String.Format("Polygon {0} with tag {1} was clicked",
-             item.Name, item.Tag));
-        }
-
-        private void Example_Click(object sender, EventArgs e)
-        {
-            setMarkers();
-            setPolygons();
-            setRoutes();
-
-        }
-
-        private void randomPoint()
-        {
-
-            double lat = RandomPos.rLatitude();
-            double lon = RandomPos.rLongitude();
-
-            GMapMarker marker = new GMarkerGoogle(
-            new PointLatLng(lat, lon),
-            GMarkerGoogleType.red_dot);
-            
-            markers.Markers.Add(marker);
-
-            gmap.Overlays.Add(markers);
-
-        }
-
-        private void random_Click(object sender, EventArgs e)
-        {
-            randomPoint();
-
         }
 
         private void municipios_Click(object sender, EventArgs e)
@@ -131,23 +79,66 @@ namespace Gmaps
 
             foreach (string f in lista)
             {
-
                 GeoCoderStatusCode statusCode;
                 PointLatLng? pointLatLng1 = OpenStreet4UMapProvider.Instance.GetPoint(f, out statusCode);
 
                 if (pointLatLng1 != null)
                 {
-                    GMapMarker marker00 = new GMarkerGoogle(new PointLatLng(pointLatLng1.Value.Lat, pointLatLng1.Value.Lng), GMarkerGoogleType.blue_dot); 
+                    GMapMarker marker00 = new GMarkerGoogle(new PointLatLng(pointLatLng1.Value.Lat, pointLatLng1.Value.Lng), GMarkerGoogleType.blue_dot);
+                    marker00.ToolTipText = f + "\n" + pointLatLng1.Value.Lat + "\n" + pointLatLng1.Value.Lng;
                     markers.Markers.Add(marker00);
-
+                    
                 }
 
             }
-
-            gmap.Overlays.Add(markers);
-
-
         }
 
+
+        private void deletePoints_click(object sender, EventArgs e)
+        {
+            puntos.Clear();
+            markers.Clear();
+            polygons.Clear();
+            routes.Clear();
+        }
+
+        private void Add_Click(object sender, EventArgs e)
+        {
+
+            double lat = double.Parse(lat_textBox.Text);
+            lat_textBox.Text = "";
+            double lon = double.Parse(lon_textBox.Text);
+            lon_textBox.Text = "";
+
+            PointLatLng p = new PointLatLng(lat, lon);
+
+            if (comboBox.Text == "Marker")
+                puntos.Add(p);
+            else if (comboBox.Text == "Polygon")
+                poligonos.Add(p);
+            else
+                rutas.Add(p);
+        }
+
+        private void Show_click(object sender, EventArgs e)
+        {
+            if (comboBox.Text == "Marker")
+            {
+                setMarkers();
+                puntos.Clear();
+            }
+            else if (comboBox.Text == "Polygon")
+            { 
+                setPolygons();
+                poligonos.Clear();
+            }
+
+            else 
+            {
+                setRoutes();
+                rutas.Clear();
+            }
+               
+        }
     }
 }
